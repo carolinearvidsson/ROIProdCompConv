@@ -1,0 +1,24 @@
+---
+title: "rmd"
+author: "Caroline Arvidsson"
+date: "2023-09-02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+## Clear workspace -------------------------------------------------------------
+rm(list = ls())  # Clear the global environment
+graphics.off()  # Clear all plots
+cat("\014")  # Clear the console
+knitr::opts_chunk$set(echo = TRUE)
+setwd("~/Desktop/ROIProdCompConv") # Set to your location.
+
+## Load libaries --------------------------------------------------------------
+
+```
+
+## Read the data
+```{r cars}
+raw <- read.csv('roi-raw.csv', sep = ',')
+pooled <- read.csv('roi-pooled.csv', sep = ',')
+```
