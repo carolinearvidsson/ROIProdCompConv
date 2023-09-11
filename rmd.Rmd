@@ -104,5 +104,20 @@ contrasts(pooled$roi) <- cbind(
   "pmtg.vs.mean" = c(rep(0, 3), 1, -1)
 )
 
+my_priors <-
+  c(
+    prior(student_t(3, 0, 2.5), class = "b"),
+    prior(cauchy(0, 2.5), class = "sd"))
 
+
+# define priors
+b <- brm(
+  beta ~ 1 + roi * mod + (1 | sub), 
+  data = pooled,
+  family = gaussian(link = "identity"),
+  prior = my_priors,
+  cores = 4)
+
+summary(b)
+plot(hypothesis(b, "roiorb.vs.mean< 0", alpha = .05))
 ```
