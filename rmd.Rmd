@@ -7,18 +7,104 @@ output: html_document
 
 ```{r setup, include=FALSE}
 ## Clear workspace -------------------------------------------------------------
-rm(list = ls())  # Clear the global environment
-graphics.off()  # Clear all plots
-cat("\014")  # Clear the console
 knitr::opts_chunk$set(echo = TRUE)
-setwd("~/Desktop/ROIProdCompConv") # Set to your location.
 
 ## Load libaries --------------------------------------------------------------
-
+library(tidyverse)
 ```
 
 ## Read the data
+
 ```{r cars}
-raw <- read.csv('roi-raw.csv', sep = ',')
-pooled <- read.csv('roi-pooled.csv', sep = ',')
+raw <- read.csv('roi-raw.csv')
+pooled <- read.csv('roi-pooled.csv') %>%
+  mutate(across(c(mod, roi, lobe), factor))
 ```
+
+```{r}
+View(pooled)
+
+pooled %>%
+  ggplot(aes(x = beta, fill = mod)) +
+  geom_density(alpha = .5, color = NA) +
+  facet_wrap(~ roi)
+```
+
+
+
+```{r}
+library(lme4)
+
+
+contrasts(pooled$mod) <- cbind("prod.vs.comp" = c(-1, 1))
+contrasts(pooled$lobe) <- cbind("temp.vs.front" = c(-1, 1))
+contrasts(pooled$roi) <- cbind(
+  "amtg.vs.mean" = c(1, rep(0, 3), -1),
+  "oper.vs.mean" = c(0, 1, rep(0, 2), -1),
+  "orb.vs.mean" = c(rep(0, 2), 1,  0, -1),
+  "pmtg.vs.mean" = c(rep(0, 3), 1, -1)
+)
+
+contrasts(pooled$roi) <- contr.helmert(5) / 2
+
+l.helmert <- lmer(beta ~ 1 + roi + (1 | sub), data = pooled)
+summary(l.helmert)
+
+contrasts(pooled$roi) <- MASS::contr.sdif(5)
+
+l.sdif <- lmer(beta ~ 1 + roi + (1 | sub), data = pooled)
+summary(l.sdif)
+
+# treatment / dummy (default R, SPSS, SAS)
+# sum / anova / effect / deviation <-- "main effects"     (weighted effect coding)
+# ordering:
+#     sliding difference (strongest)
+#     helmert
+#     polynomial (weakest)
+
+
+mean((predict(lmer(beta ~ 1 + roi / mod + (1 | sub), data = pooled)) - predict(lmer(beta ~ 1 + roi * mod + (1 | sub), data = pooled))))
+
+# # helmert
+# Fixed effects:
+#              Estimate Std. Error t value
+# (Intercept)   1.88162    0.38325   4.910
+# roi1          0.92609    0.20569   4.502
+# roi2         -0.13619    0.11876  -1.147
+# roi3          0.21758    0.08397   2.591
+# roi4          0.05014    0.06505   0.771
+# modcomp      -0.34739    0.18398  -1.888
+# roi1:modcomp -1.65216    0.29090  -5.680
+# roi2:modcomp -0.37913    0.16795  -2.257
+# roi3:modcomp  0.33635    0.11876   2.832
+# roi4:modcomp -0.17875    0.09199  -1.943
+# 
+# # sdif
+# Fixed effects:
+#                Estimate Std. Error t value
+# (Intercept)      1.8816     0.3833   4.910
+# roi2-1           1.8522     0.4114   4.502
+# roi3-2          -1.3347     0.4114  -3.244
+# roi4-3           1.1427     0.4114   2.778
+# roi5-4          -0.4021     0.4114  -0.977
+# modcomp         -0.3474     0.1840  -1.888
+# roi2-1:modcomp  -3.3043     0.5818  -5.680
+# roi3-2:modcomp   0.5148     0.5818   0.885
+# roi4-3:modcomp   2.1036     0.5818   3.616
+# roi5-4:modcomp  -1.9028     0.5818  -3.271
+```
+
+```{r}
+library(brms)
+
+contrasts(pooled$mod) <- cbind("prod.vs.comp" = c(-1, 1))
+contrasts(pooled$roi) <- cbind(
+  "amtg.vs.mean" = c(1, rep(0, 3), -1),
+  "oper.vs.mean" = c(0, 1, rep(0, 2), -1),
+  "orb.vs.mean" = c(rep(0, 2), 1,  0, -1),
+  "pmtg.vs.mean" = c(rep(0, 3), 1, -1)
+)
+
+
+```
+
