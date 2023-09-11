@@ -6,7 +6,6 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-## Clear workspace -------------------------------------------------------------
 knitr::opts_chunk$set(echo = TRUE)
 
 ## Load libaries --------------------------------------------------------------
@@ -78,7 +77,7 @@ mean((predict(lmer(beta ~ 1 + roi / mod + (1 | sub), data = pooled)) - predict(l
 # roi2:modcomp -0.37913    0.16795  -2.257
 # roi3:modcomp  0.33635    0.11876   2.832
 # roi4:modcomp -0.17875    0.09199  -1.943
-# 
+#
 # # sdif
 # Fixed effects:
 #                Estimate Std. Error t value
@@ -107,4 +106,3 @@ contrasts(pooled$roi) <- cbind(
 
 
 ```
-
